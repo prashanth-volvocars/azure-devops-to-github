@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: actions-to-eks-deployment
+  name: azure-devops-to-github-deployment
   namespace: default
   labels:
-    app: actions-to-eks-sample-app
+    app: azure-devops-to-github-sample-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: actions-to-eks-sample-app
+      app: azure-devops-to-github-sample-app
   template:
     metadata:
       labels:
-        app: actions-to-eks-sample-app
+        app: azure-devops-to-github-sample-app
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3000"
@@ -29,11 +29,18 @@ spec:
                 - amd64
                 - arm64
       containers:
-      - name: actions-to-eks
-        image: ghcr.io/prashanth-volvocars/actions-to-eks:${COMMIT}
+      - name: azure-devops-to-github
+        image: ghcr.io/prashanth-volvocars/azure-devops-to-github:${COMMIT}
         ports:
         - name: http
           containerPort: 3000
+        env:
+        - name: ENV1
+          value: ${ENV1}
+        - name: ENV2
+          value: ${ENV2}
+        - name: OUTER_ENV
+          value: ${OUTER_ENV}
         imagePullPolicy: IfNotPresent
         resources:
           limits:

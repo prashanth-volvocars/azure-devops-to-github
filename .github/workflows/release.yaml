@@ -1,4 +1,4 @@
-name: CD
+name: Azure DevOps To GitHub CD
 
 on:
   push:
@@ -21,41 +21,17 @@ jobs:
       max-parallel: 2
       matrix:
         environment: [Dev]
-        region: [eu-west-1]
+        region: [ap-south-1]
     environment:
       name: ${{ matrix.environment }}
     steps:
-      - name: Download Deployment Artifacts
-        uses: actions/download-artifact@v3
+      - name: Release
+        uses: prashanth-volvocars/release-action@master
         with:
-          name: deployment-artifacts
-
-      - name: Substitute Values In Deployment Files
-        uses: cschleiden/replace-tokens@v1
-        with:
-          tokenPrefix: '${'
-          tokenSuffix: '}'
-          files: '["cloud/deployment.yaml"]'
+          aws_region: ${{ matrix.region }}
+          aws_cluster_name: ${{ secrets.AWS_CLUSTER_NAME }}
+          role_to_assume: ${{ secrets.ROLE_TO_ASSUME }}
+          gh_pat: ${{ secrets.GH_PAT }}
+          environment: ${{ matrix.environment }}
         env:
-          COMMIT: ${{ needs.pre-release.outputs.commit }}
-
-      - name: Configure Kubectl
-        uses: azure/setup-kubectl@v2.0
-        with:
-          version: 'v1.23.6'
-        id: install
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: ${{ matrix.region }}
-          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
-
-      - name: Update KubeConfig
-        shell: bash
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }} --region=${{ matrix.region }}
-          
-      - name: Deploy To Cluster
-        shell: bash
-        run: kubectl apply -n default -f cloud/
+          COMMIT: ${{ github.sha }}

@@ -4,7 +4,7 @@ const port = 3000;
 
 
 app.get('/demo', (req, res) => {
-  res.send('GitHub Action To EKS Demo Working Fine');
+  res.send('GitHub Action To EKS Demo Working Fine '+ process.env.ENV1 + process.env.ENV2 + process.env.OUTER_ENV);
 });
 
 app.listen(port, () => {
